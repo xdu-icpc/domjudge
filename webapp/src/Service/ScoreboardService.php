@@ -117,7 +117,8 @@ class ScoreboardService
             $contest, $teams, $categories, $problems,
             $scoreCache, $freezeData, $jury,
             (int)$this->config->get('penalty_time'),
-            (bool)$this->config->get('score_in_seconds')
+            (bool)$this->config->get('score_in_seconds'),
+            (bool)$this->config->get('ioi_mode')
         );
     }
 
@@ -150,7 +151,8 @@ class ScoreboardService
             $contest, $team, $teamRank, $problems,
             $rankCache, $scoreCache, $freezeData, $showFtsInFreeze,
             (int)$this->config->get('penalty_time'),
-            (bool)$this->config->get('score_in_seconds')
+            (bool)$this->config->get('score_in_seconds'),
+            (bool)$this->config->get('ioi_mode')
         );
     }
 
@@ -486,6 +488,41 @@ class ScoreboardService
             }
         }
 
+        // IOI mode hacks:
+        $maxPointsUpJury = $maxPointsUpPubl = 0;
+        $pointsDown = 0;
+
+        $ioiMode = $this->config->get('ioi_mode');
+
+        if ($ioiMode) {
+            foreach ($submissions as $submission) {
+                if ($useExternalJudgements) {
+                    $judging = $submission->getExternalJudgements()->first() ?: null;
+                } else {
+                    $judging = $submission->getJudgings()->first() ?: null;
+                }
+
+                if ($judging && !empty($judging->getResult()) &&
+                    $judging->getResult() != Judging::RESULT_COMPILER_ERROR &&
+                    ($useExternalJudgements || !$verificationRequired || $judging->getVerified())) {
+                    $pointsUp = $judging->getScore()[0];
+                    $pointsDown = $judging->getScore()[1];
+                    $absSubmitTime = (float)$submission->getSubmittime();
+                    $submitTime    = $contest->getContestTime($absSubmitTime);
+
+                    if ($pointsUp > $maxPointsUpJury) {
+                        $maxPointsUpJury = $pointsUp;
+                        $timeJury = $submitTime;
+                    }
+
+                    if ($pointsUp > $maxPointsUpPubl && !$submission->isAfterFreeze()) {
+                        $maxPointsUpPubl = $pointsUp;
+                        $timePubl = $submitTime;
+                    }
+                }
+            }
+        }
+
         // Use a direct REPLACE INTO query to drastically speed this up
         $params = [
             ':cid' => $contest->getCid(),
@@ -500,13 +537,18 @@ class ScoreboardService
             ':solvetimePublic' => (int)$timePubl,
             ':isCorrectPublic' => (int)$correctPubl,
             ':isFirstToSolve' => (int)$firstToSolve,
+            ':pointsUpRestricted' => (int)$maxPointsUpJury,
+            ':pointsUpPublic' => (int)$maxPointsUpPubl,
+            ':pointsDown' => (int)$pointsDown,
         ];
         $this->em->getConnection()->executeQuery('REPLACE INTO scorecache
             (cid, teamid, probid,
              submissions_restricted, pending_restricted, solvetime_restricted, is_correct_restricted,
-             submissions_public, pending_public, solvetime_public, is_correct_public, is_first_to_solve)
+             submissions_public, pending_public, solvetime_public, is_correct_public, is_first_to_solve,
+             points_up_restricted, points_up_public, points_down)
             VALUES (:cid, :teamid, :probid, :submissionsRestricted, :pendingRestricted, :solvetimeRestricted, :isCorrectRestricted,
-            :submissionsPublic, :pendingPublic, :solvetimePublic, :isCorrectPublic, :isFirstToSolve)', $params);
+            :submissionsPublic, :pendingPublic, :solvetimePublic, :isCorrectPublic, :isFirstToSolve,
+            :pointsUpRestricted, :pointsUpPublic, :pointsDown)', $params);
 
         if ($this->em->getConnection()->fetchColumn('SELECT RELEASE_LOCK(:lock)',
                                                     [':lock' => $lockString]) != 1) {
@@ -514,7 +556,7 @@ class ScoreboardService
         }
 
         // If we found a new correct result, update the rank cache too
-        if ($updateRankCache && ($correctJury || $correctPubl)) {
+        if ($updateRankCache && ($correctJury || $correctPubl || $maxPointsUpJury || $maxPointsUpPubl)) {
             $this->updateRankCache($contest, $team);
         }
     }
@@ -585,11 +627,13 @@ class ScoreboardService
             ->getQuery()
             ->getResult();
 
+        $ioiMode = $this->config->get('ioi_mode');
+
         // Process all score cache rows
         foreach ($scoreCacheRows as $scoreCache) {
             foreach ($variants as $variant => $isRestricted) {
                 $probId = $scoreCache->getProblem()->getProbid();
-                if (isset($contestProblems[$probId]) && $scoreCache->getIsCorrect($isRestricted)) {
+                if (!$ioiMode && isset($contestProblems[$probId]) && $scoreCache->getIsCorrect($isRestricted)) {
                     $penalty = Utils::calcPenaltyTime($scoreCache->getIsCorrect($isRestricted),
                                                       $scoreCache->getSubmissions($isRestricted),
                                                       $penaltyTime, $scoreIsInSeconds);
@@ -599,6 +643,13 @@ class ScoreboardService
                         (float)$scoreCache->getSolveTime($isRestricted),
                         $scoreIsInSeconds
                     ) + $penalty;
+                } else if ($ioiMode) {
+                    // We use int here, in order not to modify the DB schema.
+                    $numPoints[$variant] += $contestProblems[$probId]->getPoints() * intval($scoreCache->getPoints($isRestricted) * 10000);
+                    $totalTime[$variant] = max($totalTime[$variant], Utils::scoretime(
+                        (float)$scoreCache->getSolveTime($isRestricted),
+                        $scoreIsInSeconds
+                    ));
                 }
             }
         }

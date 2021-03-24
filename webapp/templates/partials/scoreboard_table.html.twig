@@ -222,6 +222,9 @@
                 {% set totalTime = totalTime | printTimeRelative %}
             {% endif %}
             {% set totalPoints = score.numPoints %}
+            {% if ioiMode %}
+                {% set totalPoints = totalPoints | printIoiModePoints %}
+            {% endif %}
             <td class="scorenc">{{ totalPoints }}</td>
             <td class="scorett">{{ totalTime }}</td>
 
@@ -248,7 +251,15 @@
 
                     {# If correct, print time scored. The format will vary depending on the scoreboard resolution setting #}
                     {% set time = '&nbsp;' %}
-                    {% if matrixItem.isCorrect %}
+                    {% if ioiMode and matrixItem.penaltyTime > 0 %}
+                        {% set time = matrixItem.time %}
+                        {% if scoreInSeconds %}
+                            {% set time = time | scoreTime | printTimeRelative %}
+                        {% else %}
+                            {% set time = time | scoreTime %}
+                        {% endif %}
+                        {% set time = (matrixItem.penaltyTime | printIoiModePoints ~ '%') ~ ' (' ~ time ~ ')' %}
+                    {% elseif matrixItem.isCorrect %}
                         {% set time = matrixItem.time %}
                         {% if scoreInSeconds %}
                             {% set time = time | scoreTime | printTimeRelative %}

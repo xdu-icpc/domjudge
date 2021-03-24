@@ -101,11 +101,13 @@ class TwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('printtime', [$this, 'printtime']),
             new TwigFilter('printtimeHover', [$this, 'printtimeHover'], ['is_safe' => ['html']]),
             new TwigFilter('printResult', [$this, 'printResult'], ['is_safe' => ['html']]),
+            new TwigFilter('printScore', [$this, 'printScore'], ['is_safe' => ['html']]),
             new TwigFilter('printValidJuryResult', [$this, 'printValidJuryResult'], ['is_safe' => ['html']]),
             new TwigFilter('printHost', [$this, 'printHost'], ['is_safe' => ['html']]),
             new TwigFilter('printYesNo', [$this, 'printYesNo']),
             new TwigFilter('printSize', [Utils::class, 'printSize'], ['is_safe' => ['html']]),
             new TwigFilter('testcaseResults', [$this, 'testcaseResults'], ['is_safe' => ['html']]),
+            new TwigFilter('testcaseResultsForJudging', [$this, 'testcaseResultsForJudging'], ['is_safe' => ['html']]),
             new TwigFilter('displayTestcaseResults', [$this, 'displayTestcaseResults'],
                                    ['is_safe' => ['html']]),
             new TwigFilter('externalCcsUrl', [$this, 'externalCcsUrl']),
@@ -127,6 +129,7 @@ class TwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('wrapUnquoted', [$this, 'wrapUnquoted']),
             new TwigFilter('hexColorToRGBA', [$this, 'hexColorToRGBA']),
             new TwigFilter('tsvField', [$this, 'toTsvField']),
+            new TwigFilter('printIoiModePoints', [$this, 'printIoiModePoints']),
         ];
     }
 
@@ -322,6 +325,48 @@ class TwigExtension extends AbstractExtension implements GlobalsInterface
         return sprintf('<i class="fas fa-%s-circle"></i>', $icon);
     }
 
+    public function testcaseResultsForJudging(Judging $judging)
+    {
+        $judgingId = $judging->getJudgingid();
+        $probId    = $judging->getSubmission()->getProbid();
+        $testcases = $this->em->getConnection()->fetchAll(
+            'SELECT r.runresult, t.rank, t.description
+              FROM testcase t
+              LEFT JOIN judging_run r ON (r.testcaseid = t.testcaseid
+                                          AND r.judgingid = :judgingid)
+              WHERE t.probid = :probid ORDER BY rank',
+            [':judgingid' => $judgingId, ':probid' => $probId]);
+
+        $submissionDone = $judging ? !empty($judging->getEndtime()) : false;
+
+        $results = '';
+        foreach ($testcases as $key => $testcase) {
+            $class = $submissionDone ? 'secondary' : 'primary';
+            $text  = '?';
+
+            if ($testcase['runresult'] !== null) {
+                $text  = substr($testcase['runresult'], 0, 1);
+                $class = 'danger';
+                if ($testcase['runresult'] === Judging::RESULT_CORRECT) {
+                    $text  = '✓';
+                    $class = 'success';
+                }
+            }
+
+            if (!empty($testcase['description'])) {
+                $title = sprintf('Run %d: %s', $key + 1,
+                                 Utils::specialchars($testcase['description']));
+            } else {
+                $title = sprintf('Run %d', $key + 1);
+            }
+
+            $results .= sprintf('<span class="badge badge-%s badge-testcase" title="%s">%s</span>', $class, $title,
+                                $text);
+        }
+
+        return $results;
+    }
+
     /**
      * Output the testcase results for the given submissions
      * @param Submission $submission
@@ -485,6 +530,15 @@ class TwigExtension extends AbstractExtension implements GlobalsInterface
         }
 
         return sprintf('<span class="sol %s">%s</span>', $valid ? $style : 'disabled', $result);
+    }
+
+    public function printScore($score): string
+    {
+        $score_percentage = '';
+        if ($score[1] != 0)
+            $score_percentage = sprintf('(%.2f points)', 100.0 * $score[0] / $score[1]);
+
+        return sprintf('<span>%d/%d</span> %s', $score[0], $score[1], $score_percentage);
     }
 
     /**
@@ -977,5 +1031,10 @@ EOF;
     public function toTsvField(string $field)
     {
         return Utils::toTsvField($field);
+    }
+
+    public function printIoiModePoints(int $score)
+    {
+        return sprintf("%.2f", $score / 10000.0);
     }
 }
