@@ -151,6 +151,7 @@ class SubmissionController extends BaseController
         $user             = $this->dj->getUser();
         $team             = $user->getTeam();
         $contest          = $this->dj->getCurrentContest($team->getTeamid());
+        $ioiMode          = $this->config->get('ioi_mode');
         /** @var Judging $judging */
         $judging = $this->em->createQueryBuilder()
             ->from(Judging::class, 'j')
@@ -199,6 +200,7 @@ class SubmissionController extends BaseController
             'allowDownload' => $allowDownload,
             'showSampleOutput' => $showSampleOutput,
             'runs' => $runs,
+            'ioiMode' => $ioiMode,
         ];
 
         if ($request->isXmlHttpRequest()) {
