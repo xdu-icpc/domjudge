@@ -54,6 +54,8 @@
                             {{- '' | printResult -}}
                         {%- elseif verificationRequired and not submission.judgings.first.verified %}
                             {{- '' | printResult -}}
+                        {%- elseif ioiMode %}
+                            {{- submission.judgings.first.result | printResult -}} {{- submission.judgings.first.score | printScore -}}
                         {%- else %}
                             {{- submission.judgings.first.result | printResult -}}
                         {%- endif %}
