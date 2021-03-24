@@ -11,7 +11,7 @@
             <th scope="col">problem</th>
             <th scope="col">lang</th>
             <th scope="col">result</th>
-            <th scope="col"></th>
+            {% if ioiMode %} <th scope="col">score</th> {% endif %}
             {% if allowDownload %}
                 <th scope="col"></th>
             {% endif %}
@@ -60,13 +60,13 @@
                         {%- endif %}
                     </a>
                 </td>
-                <td>
-                    <a data-ajax-modal data-ajax-modal-after="markSeen" {% if link %}href="{{ link }}"{% endif %}>
-                        {%- if ioiMode %}
-                            {{- submission.judgings.first.score | printScore -}}
-                        {%- endif %}
-                    </a>
-                </td>
+                {%- if ioiMode %}
+                    <td>
+                        <a data-ajax-modal data-ajax-modal-after="markSeen" {% if link %}href="{{ link }}"{% endif %}>
+                                {{- submission.judgings.first.score | printScore -}}
+                        </a>
+                    </td>
+                {%- endif %}
         {% if allowDownload %}
                 <td>
                     <a class="btn btn-light" href="{{ path('team_submission_download', {'submitId': submission.submitid}) }}">
