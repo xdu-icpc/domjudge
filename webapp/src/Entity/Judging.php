@@ -257,7 +257,7 @@ class Judging extends BaseApiEntity implements ExternalRelationshipEntityInterfa
 
     public function getScore(): array
     {
-        return $this->$score;
+        return $this->score;
     }
 
     /**
