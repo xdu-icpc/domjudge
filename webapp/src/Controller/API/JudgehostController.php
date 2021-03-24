@@ -1032,6 +1032,10 @@ class JudgehostController extends AbstractFOSRestController
                 $lazyEval = $problemLazy;
             }
 
+            // Do not use lazy evalutation if IOI mode is enabled.
+            $ioiMode = $this->config->get('ioi_mode');
+            $lazyEval = $lazyEval && !$ioiMode;
+
             $judging->setResult($result);
 
             $hasNullResults = false;
