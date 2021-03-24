@@ -550,7 +550,7 @@ class TwigExtension extends AbstractExtension implements GlobalsInterface
 
     public function printScore($score): string
     {
-        return sprintf('<span>%d\/%d</span>', $score[0], $score[1]);
+        return sprintf('<span>%d/%d</span>', $score[0], $score[1]);
     }
 
     /**
