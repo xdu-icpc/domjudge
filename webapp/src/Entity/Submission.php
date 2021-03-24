@@ -273,6 +273,16 @@ class Submission extends BaseApiEntity implements ExternalRelationshipEntityInte
         return null;
     }
 
+    public function getScore(): ?array
+    {
+        foreach ($this->judgings as $j) {
+            if ($j->getValid()) {
+                return $j->getScore();
+            }
+        }
+        return null;
+    }
+
     /**
      * Get submitid
      *
