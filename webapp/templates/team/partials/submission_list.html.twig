@@ -11,6 +11,7 @@
             <th scope="col">problem</th>
             <th scope="col">lang</th>
             <th scope="col">result</th>
+            <th scope="col"></th>
             {% if allowDownload %}
                 <th scope="col"></th>
             {% endif %}
@@ -56,6 +57,13 @@
                             {{- '' | printResult -}}
                         {%- else %}
                             {{- submission.judgings.first.result | printResult -}}
+                        {%- endif %}
+                    </a>
+                </td>
+                <td>
+                    <a data-ajax-modal data-ajax-modal-after="markSeen" {% if link %}href="{{ link }}"{% endif %}>
+                        {%- if ioiMode %}
+                            {{- submission.judgings.first.score | printScore -}}
                         {%- endif %}
                     </a>
                 </td>

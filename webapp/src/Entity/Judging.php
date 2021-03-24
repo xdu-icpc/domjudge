@@ -221,6 +221,16 @@ class Judging extends BaseApiEntity implements ExternalRelationshipEntityInterfa
         return $sum;
     }
 
+    public function getScore(): array
+    {
+        $ret = [0, 0];
+        foreach ($this->runs as $run) {
+            $ret[0] += ($run->getRunresult() === Judging::RESULT_CORRECT);
+            $ret[1] += 1;
+        }
+        return $ret;
+    }
+
     public function getJudgingid(): int
     {
         return $this->judgingid;

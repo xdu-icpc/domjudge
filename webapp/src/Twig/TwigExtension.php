@@ -89,6 +89,7 @@ class TwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('printtime', [$this, 'printtime']),
             new TwigFilter('printtimeHover', [$this, 'printtimeHover'], ['is_safe' => ['html']]),
             new TwigFilter('printResult', [$this, 'printResult'], ['is_safe' => ['html']]),
+            new TwigFilter('printScore', [$this, 'printScore'], ['is_safe' => ['html']]),
             new TwigFilter('printValidJuryResult', [$this, 'printValidJuryResult'], ['is_safe' => ['html']]),
             new TwigFilter('printValidJurySubmissionResult', [$this, 'printValidJurySubmissionResult'],
                            ['is_safe' => ['html']]),
@@ -517,6 +518,16 @@ class TwigExtension extends AbstractExtension implements GlobalsInterface
         return sprintf('<span class="sol %s">%s</span>', $valid ? $style : 'disabled', $result);
     }
 
+    public function printScore($score): string
+    {
+        return sprintf('<span>%d/%d</span>', $score[0], $score[1]);
+    }
+
+    /**
+     * Print the given result for the jury, assuming it is valid
+     * @param string $result
+     * @return string
+     */
     public function printValidJuryResult(?string $result): string
     {
         return $this->printResult($result, true, true);
