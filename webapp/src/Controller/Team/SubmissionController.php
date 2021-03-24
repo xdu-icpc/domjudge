@@ -148,7 +148,6 @@ class SubmissionController extends BaseController
         $showCompile      = $this->config->get('show_compile');
         $showSampleOutput = $this->config->get('show_sample_output');
         $allowDownload    = (bool)$this->config->get('allow_team_submission_download');
-        $ioiMode          = $this->config->get('ioi_mode');
         $user             = $this->dj->getUser();
         $team             = $user->getTeam();
         $contest          = $this->dj->getCurrentContest($team->getTeamid());

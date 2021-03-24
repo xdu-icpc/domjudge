@@ -166,6 +166,7 @@ class MiscController extends BaseController
             $data['clarificationRequests'] = $clarificationRequests;
             $data['categories']            = $this->config->get('clar_categories');
             $data['allowDownload']         = (bool)$this->config->get('allow_team_submission_download');
+            $data['ioiMode']               = $this->config->get('ioi_mode');
         }
 
         if ($request->isXmlHttpRequest()) {
