@@ -102,6 +102,11 @@
             default_value: true
             public: false
             description: Lazy evaluation of results? If enabled, stops judging as soon as a highest priority result is found, otherwise always all testcases will be judged.
+        -   name: ioi_mode
+            type: bool
+            default_value: false
+            public: false
+            description: Enable IOI mode.  If it's enabled, the behavior of lazy_eval_results is always disabled to ensure proper scoring.
         -   name: judgehost_warning
             type: int
             default_value: 30
