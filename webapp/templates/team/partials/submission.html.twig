@@ -41,6 +41,19 @@
                     Result: {{ judging.result | printResult }}
                 </div>
             </div>
+
+            {% if ioiMode %}
+                <div class="d-flex flex-row">
+                    <div class="p-2">
+                        Score: {{ judging.score | printScore }}
+                    </div>
+                </div>
+                <div class="d-flex flex-row">
+                    <div class="p-2">
+                        Result: {{ judging.submission | testcaseResults }}
+                    </div>
+                </div>
+            {% endif %}
         {% endif %}
 
         {% if allowDownload %}
