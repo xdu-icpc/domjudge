@@ -100,6 +100,7 @@ class TwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('printYesNo', [$this, 'printYesNo']),
             new TwigFilter('printSize', [Utils::class, 'printSize'], ['is_safe' => ['html']]),
             new TwigFilter('testcaseResults', [$this, 'testcaseResults'], ['is_safe' => ['html']]),
+            new TwigFilter('testcaseResultsForJudging', [$this, 'testcaseResultsForJudging'], ['is_safe' => ['html']]),
             new TwigFilter('displayTestcaseResults', [$this, 'displayTestcaseResults'],
                            ['is_safe' => ['html']]),
             new TwigFilter('externalCcsUrl', [$this, 'externalCcsUrl']),
@@ -359,7 +360,55 @@ class TwigExtension extends AbstractExtension implements GlobalsInterface
         return '';
     }
 
-    public function testcaseResults(Submission $submission, ?bool $showExternal = false): string
+    public function testcaseResultsForJudging(Judging $judging)
+    {
+        $judgingId = $judging->getJudgingid();
+        $probId    = $judging->getSubmission()->getProbid();
+        $testcases = $this->em->getConnection()->fetchAll(
+            'SELECT r.runresult, t.rank, t.description
+              FROM testcase t
+              LEFT JOIN judging_run r ON (r.testcaseid = t.testcaseid
+                                          AND r.judgingid = :judgingid)
+              WHERE t.probid = :probid ORDER BY rank',
+            [':judgingid' => $judgingId, ':probid' => $probId]);
+
+        $submissionDone = $judging ? !empty($judging->getEndtime()) : false;
+
+        $results = '';
+        foreach ($testcases as $key => $testcase) {
+            $class = $submissionDone ? 'secondary' : 'primary';
+            $text  = '?';
+
+            if ($testcase['runresult'] !== null) {
+                $text  = substr($testcase['runresult'], 0, 1);
+                $class = 'danger';
+                if ($testcase['runresult'] === Judging::RESULT_CORRECT) {
+                    $text  = '✓';
+                    $class = 'success';
+                }
+            }
+
+            if (!empty($testcase['description'])) {
+                $title = sprintf('Run %d: %s', $key + 1,
+                                 Utils::specialchars($testcase['description']));
+            } else {
+                $title = sprintf('Run %d', $key + 1);
+            }
+
+            $results .= sprintf('<span class="badge badge-%s badge-testcase" title="%s">%s</span>', $class, $title,
+                                $text);
+        }
+
+        return $results;
+    }
+
+    /**
+     * Output the testcase results for the given submissions
+     * @param Submission $submission
+     * @param bool       $external If true, show external testcase results
+     * @return string
+     */
+    public function testcaseResults(Submission $submission, bool $external = false)
     {
         // We use a direct SQL query here for performance reasons
         if ($showExternal) {
