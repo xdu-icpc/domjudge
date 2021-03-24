@@ -105,7 +105,7 @@
         -   name: ioi_mode
             type: bool
             default_value: false
-            public: false
+            public: true
             description: Enable IOI mode.  If it's enabled, the behavior of lazy_eval_results is always disabled to ensure proper scoring.
         -   name: judgehost_warning
             type: int
