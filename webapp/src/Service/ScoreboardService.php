@@ -502,7 +502,7 @@ class ScoreboardService
 
                 if (($judging && !empty($judging->getResult())) &&
                     ($useExternalJudgements || !$verificationRequired || $judging->getVerified())) {
-                    $pointsUp = $judging->getScore()[0] * 100;
+                    $pointsUp = $judging->getScore()[0];
                     $pointsDown = $judging->getScore()[1];
                     $absSubmitTime = (float)$submission->getSubmittime();
                     $submitTime    = $contest->getContestTime($absSubmitTime);
@@ -553,7 +553,7 @@ class ScoreboardService
         }
 
         // If we found a new correct result, update the rank cache too
-        if ($updateRankCache && ($correctJury || $correctPubl)) {
+        if ($updateRankCache && ($correctJury || $correctPubl || $maxPointsUpJury || $maxPointsUpPubl)) {
             $this->updateRankCache($contest, $team);
         }
     }
@@ -624,11 +624,13 @@ class ScoreboardService
             ->getQuery()
             ->getResult();
 
+        $ioiMode = $this->config->get('ioi_mode');
+
         // Process all score cache rows
         foreach ($scoreCacheRows as $scoreCache) {
             foreach ($variants as $variant => $isRestricted) {
                 $probId = $scoreCache->getProblem()->getProbid();
-                if (isset($contestProblems[$probId]) && $scoreCache->getIsCorrect($isRestricted)) {
+                if (!$ioiMode && isset($contestProblems[$probId]) && $scoreCache->getIsCorrect($isRestricted)) {
                     $penalty = Utils::calcPenaltyTime($scoreCache->getIsCorrect($isRestricted),
                                                       $scoreCache->getSubmissions($isRestricted),
                                                       $penaltyTime, $scoreIsInSeconds);
@@ -638,6 +640,13 @@ class ScoreboardService
                         (float)$scoreCache->getSolveTime($isRestricted),
                         $scoreIsInSeconds
                     ) + $penalty;
+                } else if ($ioiMode) {
+                    // We use int here, in order not to modify the DB schema.
+                    $numPoints[$variant] += $contestProblems[$probId]->getPoints() * intval($scoreCache->getPoints($isRestricted) * 10000);
+                    $totalTime[$variant] += Utils::scoretime(
+                        (float)$scoreCache->getSolveTime($isRestricted),
+                        $scoreIsInSeconds
+                    );
                 }
             }
         }
