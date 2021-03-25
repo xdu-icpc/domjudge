@@ -217,6 +217,9 @@
                 {% set totalTime = totalTime | printTimeRelative %}
             {% endif %}
             {% set totalPoints = score.numPoints %}
+            {% if ioiMode %}
+                {% set totalPoints = totalPoints | printIoiModePoints %}
+            {% endif %}
             <td class="scorenc">{{ totalPoints }}</td>
             <td class="scorett">{{ totalTime }}</td>
 

@@ -185,6 +185,7 @@ class TwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('hexColorToRGBA', [$this, 'hexColorToRGBA']),
             new TwigFilter('tsvField', [$this, 'toTsvField']),
             new TwigFilter('fileTypeIcon', [$this, 'fileTypeIcon']),
+            new TwigFilter('printIoiModePoints', [$this, 'printIoiModePoints']),
         ];
     }
 
@@ -1205,5 +1206,10 @@ EOF;
         }
 
         return 'fas fa-file-' . $iconName;
+    }
+
+    public function printIoiModePoints(int $score)
+    {
+        return sprintf("%.2f", $score / 10000.0);
     }
 }
