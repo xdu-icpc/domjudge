@@ -253,7 +253,7 @@
                         {% else %}
                             {% set time = time | scoreTime %}
                         {% endif %}
-                        {% set time = (matrixItem.penaltyTime | printIoiModePoints) ~ ' (' ~ time ~ ')' %}
+                        {% set time = (matrixItem.penaltyTime | printIoiModePoints ~ '%') ~ ' (' ~ time ~ ')' %}
                     {% elseif matrixItem.isCorrect %}
                         {% set time = matrixItem.time %}
                         {% if scoreInSeconds %}
