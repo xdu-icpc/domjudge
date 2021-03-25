@@ -108,6 +108,36 @@ class ScoreCache
     private $is_first_to_solve = false;
 
     /**
+     * @var int
+     *
+     * @ORM\Column(type="integer", name="points_up_restricted",
+     *     options={"comment"="the number of tests passed on jury board",
+     *              "unsigned"=true,"default"="0"},
+     *     nullable=false)
+     */
+    private $points_up_restricted = 0;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(type="integer", name="points_up_public",
+     *     options={"comment"="the number of tests passed on public board",
+     *              "unsigned"=true,"default"="0"},
+     *     nullable=false)
+     */
+    private $points_up_public = 0;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(type="integer", name="points_down",
+     *     options={"comment"="the number of all tests",
+     *              "unsigned"=true,"default"="0"},
+     *     nullable=false)
+     */
+    private $points_down = 0;
+
+    /**
      * @ORM\Id
      * @ORM\ManyToOne(targetEntity="Contest")
      * @ORM\JoinColumn(name="cid", referencedColumnName="cid", onDelete="CASCADE")
@@ -283,5 +313,14 @@ class ScoreCache
     public function getIsCorrect(bool $restricted): bool
     {
         return $restricted ? $this->getIsCorrectRestricted() : $this->getIsCorrectPublic();
+    }
+
+    public function getPoints(bool $restricted): double
+    {
+        $up = $restricted ? $this->points_up_restricted : $this->points_up_public;
+        $down = $this->points_down;
+        if (!$down)
+            return 0.0;
+        return 100.0 * $up / $down;
     }
 }
