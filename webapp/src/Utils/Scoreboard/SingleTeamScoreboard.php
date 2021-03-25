@@ -40,6 +40,8 @@ class SingleTeamScoreboard extends Scoreboard
      */
     protected $showRestrictedFts;
 
+    protected $ioiMode;
+
     /**
      * SingleTeamScoreboard constructor.
      * @param Contest          $contest
@@ -63,14 +65,16 @@ class SingleTeamScoreboard extends Scoreboard
         FreezeData $freezeData,
         bool $showFtsInFreeze,
         int $penaltyTime,
-        bool $scoreIsInSeconds
+        bool $scoreIsInSeconds,
+        bool $ioiMode = false
     ) {
         $this->team              = $team;
         $this->teamRank          = $teamRank;
         $this->rankCache         = $rankCache;
         $this->showRestrictedFts = $showFtsInFreeze || $freezeData->showFinal();
+        $this->ioiMode           = $ioiMode;
         parent::__construct($contest, [$team->getTeamid() => $team], [], $problems, $scoreCache, $freezeData, true,
-            $penaltyTime, $scoreIsInSeconds);
+            $penaltyTime, $scoreIsInSeconds, $ioiMode);
     }
 
     /**
@@ -97,6 +101,10 @@ class SingleTeamScoreboard extends Scoreboard
                 $scoreRow->getIsCorrect($this->restricted), $scoreRow->getSubmissions($this->restricted),
                 $this->penaltyTime, $this->scoreIsInSeconds
             );
+
+            if ($this->ioiMode) {
+                $penalty = intval(10000 * $scoreRow->getPoints($this->restricted));
+            }
 
             $this->matrix[$scoreRow->getTeam()->getTeamid()][$scoreRow->getProblem()->getProbid()] = new ScoreboardMatrixItem(
                 $scoreRow->getIsCorrect($this->restricted),
