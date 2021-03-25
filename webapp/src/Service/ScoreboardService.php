@@ -543,7 +543,7 @@ class ScoreboardService
             ':isCorrectPublic' => (int)$correctPubl,
             ':isFirstToSolve' => (int)$firstToSolve,
             ':pointsUpRestricted' => (int)$maxPointsUpJury,
-            ':pointsUpPublic' => (int)$maxPointsUpPublic,
+            ':pointsUpPublic' => (int)$maxPointsUpPubl,
             ':pointsDown' => (int)$pointsDown,
         ];
         $this->em->getConnection()->executeQuery('REPLACE INTO scorecache
