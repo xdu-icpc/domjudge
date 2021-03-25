@@ -10,7 +10,7 @@
                 <td class="scorenc"></td>
             {% else %}
                 <td title="total solved" class="scorenc">
-                    {{ scoreboard.summary.numberOfPoints(sortOrder) }}
+                    {% if not ioiMode %} {{ scoreboard.summary.numberOfPoints(sortOrder) }} {% endif %}
                 </td>
             {% endif %}
             <td></td>
