@@ -124,6 +124,8 @@ class PublicController extends BaseController
 
         $data['current_contest'] = $contest;
 
+        $data['ioiMode'] = $this->config->get('ioi_mode');
+
         if ($request->isXmlHttpRequest()) {
             return $this->render('partials/scoreboard.html.twig', $data, $response);
         }

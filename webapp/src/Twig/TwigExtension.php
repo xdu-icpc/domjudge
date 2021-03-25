@@ -129,6 +129,7 @@ class TwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('wrapUnquoted', [$this, 'wrapUnquoted']),
             new TwigFilter('hexColorToRGBA', [$this, 'hexColorToRGBA']),
             new TwigFilter('tsvField', [$this, 'toTsvField']),
+            new TwigFilter('printIoiModePoints', [$this, 'printIoiModePoints']),
         ];
     }
 
@@ -1030,5 +1031,10 @@ EOF;
     public function toTsvField(string $field)
     {
         return Utils::toTsvField($field);
+    }
+
+    public function printIoiModePoints(int $score)
+    {
+        return sprintf("%.2f", $score / 10000.0);
     }
 }
