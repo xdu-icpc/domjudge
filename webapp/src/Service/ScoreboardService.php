@@ -510,7 +510,8 @@ class ScoreboardService
                     $judging = $submission->getJudgings()->first() ?: null;
                 }
 
-                if (($judging && !empty($judging->getResult())) &&
+                if ($judging && !empty($judging->getResult()) &&
+                    $judging->getResult() != Judging::RESULT_COMPILER_ERROR &&
                     ($useExternalJudgements || !$verificationRequired || $judging->getVerified())) {
                     $pointsUp = $judging->getScore()[0];
                     $pointsDown = $judging->getScore()[1];
