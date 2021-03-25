@@ -40,8 +40,6 @@ class SingleTeamScoreboard extends Scoreboard
      */
     protected $showRestrictedFts;
 
-    protected $ioiMode;
-
     /**
      * SingleTeamScoreboard constructor.
      * @param Contest          $contest
@@ -72,7 +70,6 @@ class SingleTeamScoreboard extends Scoreboard
         $this->teamRank          = $teamRank;
         $this->rankCache         = $rankCache;
         $this->showRestrictedFts = $showFtsInFreeze || $freezeData->showFinal();
-        $this->ioiMode           = $ioiMode;
         parent::__construct($contest, [$team->getTeamid() => $team], [], $problems, $scoreCache, $freezeData, true,
             $penaltyTime, $scoreIsInSeconds, $ioiMode);
     }
@@ -80,7 +77,7 @@ class SingleTeamScoreboard extends Scoreboard
     /**
      * @inheritdoc
      */
-    protected function calculateScoreboard()
+    protected function calculateScoreboard($ioiMode = false)
     {
         $teamScore = $this->scores[$this->team->getTeamid()];
         if ($this->rankCache !== null) {
@@ -102,7 +99,7 @@ class SingleTeamScoreboard extends Scoreboard
                 $this->penaltyTime, $this->scoreIsInSeconds
             );
 
-            if ($this->ioiMode) {
+            if ($ioiMode) {
                 $penalty = intval(10000 * $scoreRow->getPoints($this->restricted));
             }
 
