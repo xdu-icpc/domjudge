@@ -117,7 +117,8 @@ class ScoreboardService
             $contest, $teams, $categories, $problems,
             $scoreCache, $freezeData, $jury,
             (int)$this->config->get('penalty_time'),
-            (bool)$this->config->get('score_in_seconds')
+            (bool)$this->config->get('score_in_seconds'),
+            (bool)$this->config->get('ioi_mode')
         );
     }
 
