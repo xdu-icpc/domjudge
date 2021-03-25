@@ -494,6 +494,40 @@ class ScoreboardService
             }
         }
 
+        // IOI mode hacks:
+        $maxPointsUpJury = $maxPointsUpPubl = 0;
+        $pointsDown = 0;
+
+        $ioiMode = $this->config->get('ioi_mode');
+
+        if ($ioiMode) {
+            foreach ($submissions as $submission) {
+                if ($useExternalJudgements) {
+                    $judging = $submission->getExternalJudgements()->first() ?: null;
+                } else {
+                    $judging = $submission->getJudgings()->first() ?: null;
+                }
+
+                if (($judging && !empty($judging->getResult())) &&
+                    ($useExternalJudgements || !$verificationRequired || $judging->getVerified())) {
+                    $pointsUp = $judging->getScore()[0] * 100;
+                    $pointsDown = $judging->getScore()[1];
+                    $absSubmitTime = (float)$submission->getSubmittime();
+                    $submitTime    = $contest->getContestTime($absSubmitTime);
+
+                    if ($pointsUp > $maxPointsUpJury) {
+                        $maxPointsUpJury = $pointsUp;
+                        $timeJury = $submitTime;
+                    }
+
+                    if ($pointsUp > $maxPointsUpPubl && !$submission->isAfterFreeze()) {
+                        $maxPointsUpPubl = $pointsUp;
+                        $timePubl = $submitTime;
+                    }
+                }
+            }
+        }
+
         // Use a direct REPLACE INTO query to drastically speed this up
         $params = [
             ':cid' => $contest->getCid(),
@@ -508,13 +542,18 @@ class ScoreboardService
             ':solvetimePublic' => (int)$timePubl,
             ':isCorrectPublic' => (int)$correctPubl,
             ':isFirstToSolve' => (int)$firstToSolve,
+            ':pointsUpRestricted' => (int)$maxPointsUpJury,
+            ':pointsUpPublic' => (int)$maxPointsUpPublic,
+            ':pointsDown' => (int)$pointsDown,
         ];
         $this->em->getConnection()->executeQuery('REPLACE INTO scorecache
             (cid, teamid, probid,
              submissions_restricted, pending_restricted, solvetime_restricted, is_correct_restricted,
-             submissions_public, pending_public, solvetime_public, is_correct_public, is_first_to_solve)
+             submissions_public, pending_public, solvetime_public, is_correct_public, is_first_to_solve,
+             points_up_restricted, points_up_public, points_down)
             VALUES (:cid, :teamid, :probid, :submissionsRestricted, :pendingRestricted, :solvetimeRestricted, :isCorrectRestricted,
-            :submissionsPublic, :pendingPublic, :solvetimePublic, :isCorrectPublic, :isFirstToSolve)', $params);
+            :submissionsPublic, :pendingPublic, :solvetimePublic, :isCorrectPublic, :isFirstToSolve,
+            :pointsUpRestricted, :pointsUpPublic, :pointsDown)', $params);
 
         if ($this->em->getConnection()->fetchColumn('SELECT RELEASE_LOCK(:lock)',
                                                     [':lock' => $lockString]) != 1) {
