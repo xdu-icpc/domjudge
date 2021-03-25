@@ -251,7 +251,15 @@
 
                     {# If correct, print time scored. The format will vary depending on the scoreboard resolution setting #}
                     {% set time = '&nbsp;' %}
-                    {% if matrixItem.isCorrect %}
+                    {% if ioiMode and matrixItem.penaltyTime > 0 %}
+                        {% set time = matrixItem.time %}
+                        {% if scoreInSeconds %}
+                            {% set time = time | scoreTime | printTimeRelative %}
+                        {% else %}
+                            {% set time = time | scoreTime %}
+                        {% endif %}
+                        {% set time = (matrixItem.penaltyTime | printIoiModePoints) ~ ' (' ~ time ~ ')' %}
+                    {% elseif matrixItem.isCorrect %}
                         {% set time = matrixItem.time %}
                         {% if scoreInSeconds %}
                             {% set time = time | scoreTime | printTimeRelative %}
@@ -261,14 +269,6 @@
                         {% else %}
                             {% set time = time | scoreTime %}
                         {% endif %}
-                    {% elseif ioiMode and matrixItem.penaltyTime > 0 %}
-                        {% set time = matrixItem.time %}
-                        {% if scoreInSeconds %}
-                            {% set time = time | scoreTime | printTimeRelative %}
-                        {% else %}
-                            {% set time = time | scoreTime %}
-                        {% endif %}
-                        {% set time = (matrixItem.penaltyTime | printIoiModePoints) ~ ' (' ~ time ~ ')' %}
                     {% endif %}
 
                     {% set link = null %}
