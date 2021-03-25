@@ -261,6 +261,13 @@
                         {% else %}
                             {% set time = time | scoreTime %}
                         {% endif %}
+                    {% elseif ioiMode and matrixItem.penalty > 0 %}
+                        {% if scoreInSeconds %}
+                            {% set time = time | scoreTime | printTimeRelative %}
+                        {% else %}
+                            {% set time = time | scoreTime %}
+                        {% endif %}
+                        {% set time = (matrixItem.penalty | printIoiModePoints) ~ ' (' ~ time ~ ')' %}
                     {% endif %}
 
                     {% set link = null %}
