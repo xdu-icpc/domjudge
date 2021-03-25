@@ -225,8 +225,9 @@ class Scoreboard
             );
 
             // Penalty does not make sense in IOI mode.
+            // We reuse it to store the points for this problem.
             if ($ioiMode)
-                $penalty = 0;
+                $penalty = intval(10000 * $scoreRow->getPoints($this->restricted));
 
             $this->matrix[$teamId][$probId] = new ScoreboardMatrixItem(
                 $scoreRow->getIsCorrect($this->restricted),
@@ -241,9 +242,9 @@ class Scoreboard
                 $solveTime      = Utils::scoretime($scoreRow->getSolveTime($this->restricted),
                                                    $this->scoreIsInSeconds);
                 $contestProblem = $this->problems[$scoreRow->getProblem()->getProbid()];
-                $this->scores[$teamId]->numPoints += $contestProblem->getPoints() * intval(10000 * $scoreRow->getPoints($this->restricted));
+                $this->scores[$teamId]->numPoints += $contestProblem->getPoints() * $penalty;
                 $this->scores[$teamId]->solveTimes[] = $solveTime;
-                $this->scores[$teamId]->totalTime += $solveTime + $penalty;
+                $this->scores[$teamId]->totalTime += $solveTime;
             } else if ($scoreRow->getIsCorrect($this->restricted)) {
                 $solveTime      = Utils::scoretime($scoreRow->getSolveTime($this->restricted),
                                                    $this->scoreIsInSeconds);
