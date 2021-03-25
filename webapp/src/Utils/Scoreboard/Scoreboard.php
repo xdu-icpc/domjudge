@@ -244,7 +244,7 @@ class Scoreboard
                 $contestProblem = $this->problems[$scoreRow->getProblem()->getProbid()];
                 $this->scores[$teamId]->numPoints += $contestProblem->getPoints() * $penalty;
                 $this->scores[$teamId]->solveTimes[] = $solveTime;
-                $this->scores[$teamId]->totalTime += $solveTime;
+                $this->scores[$teamId]->totalTime = max($this->scores[$teamId]->totalTime, $solveTime);
             } else if ($scoreRow->getIsCorrect($this->restricted)) {
                 $solveTime      = Utils::scoretime($scoreRow->getSolveTime($this->restricted),
                                                    $this->scoreIsInSeconds);
