@@ -91,7 +91,8 @@ class ScoreboardService
             $contest, $teams, $categories, $problems,
             $scoreCache, $freezeData, $jury,
             (int)$this->config->get('penalty_time'),
-            (bool)$this->config->get('score_in_seconds')
+            (bool)$this->config->get('score_in_seconds'),
+            (bool)$this->config->get('ioi_mode')
         );
     }
 
@@ -122,7 +123,8 @@ class ScoreboardService
             $contest, $team, $teamRank, $problems,
             $rankCache, $scoreCache, $freezeData, $showFtsInFreeze,
             (int)$this->config->get('penalty_time'),
-            (bool)$this->config->get('score_in_seconds')
+            (bool)$this->config->get('score_in_seconds'),
+            (bool)$this->config->get('ioi_mode')
         );
     }
 
@@ -609,10 +611,10 @@ class ScoreboardService
                 } else if ($ioiMode) {
                     // We use int here, in order not to modify the DB schema.
                     $numPoints[$variant] += $contestProblems[$probId]->getPoints() * intval($scoreCache->getPoints($isRestricted) * 10000);
-                    $totalTime[$variant] += Utils::scoretime(
+                    $totalTime[$variant] = max($totalTime[$variant], Utils::scoretime(
                         (float)$scoreCache->getSolveTime($isRestricted),
                         $scoreIsInSeconds
-                    );
+                    ));
                 }
             }
         }
