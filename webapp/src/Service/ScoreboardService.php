@@ -510,6 +510,10 @@ class ScoreboardService
                     $judging = $submission->getJudgings()->first() ?: null;
                 }
 
+                // Prevent a mis-update of pointsDown.
+                if ($judging->getResult() == Judging::RESULT_COMPILER_ERROR)
+                    continue;
+
                 if (($judging && !empty($judging->getResult())) &&
                     ($useExternalJudgements || !$verificationRequired || $judging->getVerified())) {
                     $pointsUp = $judging->getScore()[0];
