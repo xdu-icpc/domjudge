@@ -1024,6 +1024,13 @@ class JudgehostController extends AbstractFOSRestController
                 }
 
                 $this->dj->auditlog('judging', $judging->getJudgingid(), 'judged', $result, $hostname);
+            } else if ($ioiMode) {
+                // It's necessary to refresh the scorecache row in IOI mode.
+                $submission = $judging->getSubmission();
+                $contest    = $submission->getContest();
+                $team       = $submission->getTeam();
+                $problem    = $submission->getProblem();
+                $this->scoreboardService->calculateScoreRow($contest, $team, $problem);
             }
 
             // Send an event for an endtime (and max runtime update).
