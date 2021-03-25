@@ -646,10 +646,10 @@ class ScoreboardService
                 } else if ($ioiMode) {
                     // We use int here, in order not to modify the DB schema.
                     $numPoints[$variant] += $contestProblems[$probId]->getPoints() * intval($scoreCache->getPoints($isRestricted) * 10000);
-                    $totalTime[$variant] += Utils::scoretime(
+                    $totalTime[$variant] = max($totalTime[$variant], Utils::scoretime(
                         (float)$scoreCache->getSolveTime($isRestricted),
                         $scoreIsInSeconds
-                    );
+                    ));
                 }
             }
         }
