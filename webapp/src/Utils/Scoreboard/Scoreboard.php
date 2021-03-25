@@ -105,7 +105,8 @@ class Scoreboard
         FreezeData $freezeData,
         bool $jury,
         int $penaltyTime,
-        bool $scoreIsInSeconds
+        bool $scoreIsInSeconds,
+        bool $ioiMode = false
     ) {
         $this->contest          = $contest;
         $this->teams            = $teams;
@@ -118,7 +119,7 @@ class Scoreboard
         $this->scoreIsInSeconds = $scoreIsInSeconds;
 
         $this->initializeScoreboard();
-        $this->calculateScoreboard();
+        $this->calculateScoreboard($ioiMode);
     }
 
     /**
@@ -204,7 +205,7 @@ class Scoreboard
     /**
      * Calculate the scoreboard data, filling the summary, matrix and scores properties
      */
-    protected function calculateScoreboard()
+    protected function calculateScoreboard($ioiMode = false)
     {
         // Calculate matrix and update scores
         $this->matrix = [];
@@ -223,6 +224,10 @@ class Scoreboard
                 $this->penaltyTime, $this->scoreIsInSeconds
             );
 
+            // Penalty does not make sense in IOI mode.
+            if ($ioiMode)
+                $penalty = 0;
+
             $this->matrix[$teamId][$probId] = new ScoreboardMatrixItem(
                 $scoreRow->getIsCorrect($this->restricted),
                 $scoreRow->getIsCorrect($this->restricted) ? $scoreRow->getIsFirstToSolve() : false,
@@ -232,7 +237,14 @@ class Scoreboard
                 $penalty
             );
 
-            if ($scoreRow->getIsCorrect($this->restricted)) {
+            if ($ioiMode) {
+                $solveTime      = Utils::scoretime($scoreRow->getSolveTime($this->restricted),
+                                                   $this->scoreIsInSeconds);
+                $contestProblem = $this->problems[$scoreRow->getProblem()->getProbid()];
+                $this->scores[$teamId]->numPoints += $contestProblem->getPoints() * intval(10000 * $scoreRow->getPoints($this->restricted));
+                $this->scores[$teamId]->solveTimes[] = $solveTime;
+                $this->scores[$teamId]->totalTime += $solveTime + $penalty;
+            } else if ($scoreRow->getIsCorrect($this->restricted)) {
                 $solveTime      = Utils::scoretime($scoreRow->getSolveTime($this->restricted),
                                                    $this->scoreIsInSeconds);
                 $contestProblem = $this->problems[$scoreRow->getProblem()->getProbid()];
