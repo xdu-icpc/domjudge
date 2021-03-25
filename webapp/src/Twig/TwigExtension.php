@@ -131,6 +131,7 @@ class TwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('entityIdBadge', [$this, 'entityIdBadge'], ['is_safe' => ['html']]),
             new TwigFilter('medalType', [$this->awards, 'medalType']),
             new TwigFilter('numTableActions', [$this, 'numTableActions']),
+            new TwigFilter('printIoiModePoints', [$this, 'printIoiModePoints']),
         ];
     }
 
@@ -1280,5 +1281,10 @@ EOF;
             $maxNumActions = max($maxNumActions, count($item['actions'] ?? []));
         }
         return $maxNumActions;
+    }
+
+    public function printIoiModePoints(int $score): string
+    {
+        return sprintf("%.2f", $score / 10000.0);
     }
 }

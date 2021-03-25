@@ -55,6 +55,7 @@ class ScoreboardController extends BaseController
             $request, $response, $refreshUrl, false, false, false, $contest
         );
         $data['myTeamId'] = $user->getTeam()->getTeamid();
+        $data['ioiMode'] = $this->config->get('ioi_mode');
 
         if ($request->isXmlHttpRequest()) {
             $data['current_contest'] = $contest;
@@ -79,6 +80,7 @@ class ScoreboardController extends BaseController
             'team' => $team,
             'showFlags' => $showFlags,
             'showAffiliations' => $showAffiliations,
+            'ioiMode' => $this->config->get('ioi_mode'),
         ];
 
         if ($request->isXmlHttpRequest()) {
