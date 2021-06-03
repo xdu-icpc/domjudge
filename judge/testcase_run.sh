@@ -38,6 +38,10 @@ cleanup ()
 			ln -s "$TESTOUT" "$WORKDIR/testdata.out"
 		fi
 
+		rm -f "$WORKDIR/program.out" "$WORKDIR/program.err"
+		echo "output removed to save space" > "$WORKDIR/program.out"
+		touch "$WORKDIR/program.err"
+
 		# Remove access to workdir for next runs
 		chmod go= "$WORKDIR"
 	fi
