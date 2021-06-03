@@ -757,7 +757,8 @@ class ImportExportService
                     'teamid' => $teamId,
                     'icpcid' => $teamIcpcId,
                     'categoryid' => @$line[2],
-                    'name' => @$line[3],
+					'name' => @$line[3],
+					'room' => @$line[8],
                 ],
                 'team_affiliation' => [
                     'shortname' => !empty(@$line[5]) ? @$line[5] : $affiliationExternalid,
