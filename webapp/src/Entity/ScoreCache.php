@@ -110,9 +110,9 @@ class ScoreCache
     /**
      * @var int
      *
-     * @ORM\Column(type="integer", name="points_up_restricted",
+     * @ORM\Column(type="integer", name="points_up_restricted", length=4,
      *     options={"comment"="the number of tests passed on jury board",
-     *              "unsigned"=true,"default"="0"},
+     *              "unsigned"=false,"default"="0"},
      *     nullable=false)
      */
     private $points_up_restricted = 0;
@@ -120,9 +120,9 @@ class ScoreCache
     /**
      * @var int
      *
-     * @ORM\Column(type="integer", name="points_up_public",
+     * @ORM\Column(type="integer", name="points_up_public", length=4,
      *     options={"comment"="the number of tests passed on public board",
-     *              "unsigned"=true,"default"="0"},
+     *              "unsigned"=false,"default"="0"},
      *     nullable=false)
      */
     private $points_up_public = 0;
@@ -130,9 +130,9 @@ class ScoreCache
     /**
      * @var int
      *
-     * @ORM\Column(type="integer", name="points_down",
+     * @ORM\Column(type="integer", name="points_down", length=4,
      *     options={"comment"="the number of all tests",
-     *              "unsigned"=true,"default"="0"},
+     *              "unsigned"=false,"default"="0"},
      *     nullable=false)
      */
     private $points_down = 0;
@@ -315,7 +315,7 @@ class ScoreCache
         return $restricted ? $this->getIsCorrectRestricted() : $this->getIsCorrectPublic();
     }
 
-    public function getPoints(bool $restricted): double
+    public function getPoints(bool $restricted): float
     {
         $up = $restricted ? $this->points_up_restricted : $this->points_up_public;
         $down = $this->points_down;
