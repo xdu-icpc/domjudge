@@ -225,6 +225,8 @@ class Judging extends BaseApiEntity implements ExternalRelationshipEntityInterfa
     {
         $ret = [0, 0];
         foreach ($this->runs as $run) {
+            if ($run->getTestcase()->getSample())
+                continue;
             $ret[0] += ($run->getRunresult() === Judging::RESULT_CORRECT);
             $ret[1] += 1;
         }
