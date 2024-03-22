@@ -926,6 +926,7 @@ class ScoreboardService
                 'ajax' => true,
              ],
              'static' => $static,
+             'ioiMode' => $this->config->get('ioi_mode'),
         ];
 
         if ($contest) {

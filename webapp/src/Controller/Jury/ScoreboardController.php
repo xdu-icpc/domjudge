@@ -38,7 +38,6 @@ class ScoreboardController extends AbstractController
         $data       = $this->scoreboardService->getScoreboardTwigData(
             $request, $response, $refreshUrl, $this->isGranted('ROLE_JURY'), false, false, $contest
         );
-        $data['ioiMode'] = $this->dj->dbconfig_get('ioi_mode');
 
         if ($request->isXmlHttpRequest()) {
             $data['current_contest'] = $contest;
