@@ -280,7 +280,7 @@
                         {% if numSubmissions != '0' %}
                             <a {% if link %}href="{{ link }}"{% endif %}>
                                 <div class="{{ scoreCssClass }}">
-                                    {% if matrixItem.isCorrect %}{{ time }}{% else %}&nbsp;{% endif %}
+                                    {% if matrixItem.isCorrect or (ioiMode and matrixItem.penaltyTime > 0) %}{{ time }}{% else %}&nbsp;{% endif %}
                                     <span>
                                         {% if numSubmissions is same as(1) %}
                                             1 try
