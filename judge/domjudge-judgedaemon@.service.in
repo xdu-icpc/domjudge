@@ -11,12 +11,12 @@
 Description="DOMjudge judgedaemon bound to CPU #%i"
 PartOf=domjudge-judgehost.target
 
-Requires=create-cgroups.service
-After=create-cgroups.service
 After=network.target
 
 [Service]
 Type=simple
+
+Delegate=memory cpuset
 
 ExecStart=@judgehost_bindir@/judgedaemon -n %i
 User=@DOMJUDGE_USER@

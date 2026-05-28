@@ -1215,8 +1215,26 @@ int main(int argc, char **argv)
 	} else {
 		str[0] = 0;
 	}
-	snprintf(cgroupname, 255, "domjudge/dj_cgroup_%d_%.16s_%d.%06d",
-	         getpid(), str, (int)progstarttime.tv_sec, (int)progstarttime.tv_usec);
+
+	const char *cg_root = "domjudge";
+	const char *sd_cg_prefix = "0::/system.slice/";
+	char proc_self_cgroup[100];
+
+	FILE *fp = nullptr;
+	if ( ( fp = fopen("/proc/self/cgroup", "r")) != nullptr ) {
+		ret = fscanf (fp, "%99s", proc_self_cgroup);
+		if ( ret == 1 && strlen(proc_self_cgroup) < 99 && strncmp(proc_self_cgroup, sd_cg_prefix, strlen(sd_cg_prefix)) == 0 ) {
+			char *p = strrchr(proc_self_cgroup, '/');
+			if ( p && strcmp(p + 1, "judge") == 0) {
+				*p = 0;
+				cg_root = proc_self_cgroup + 4;
+			}
+		}
+		fclose(fp);
+	}
+
+	snprintf(cgroupname, 255, "%s/dj_cgroup_%d_%.16s_%d.%06d",
+	         cg_root, getpid(), str, (int)progstarttime.tv_sec, (int)progstarttime.tv_usec);
 
 	cgroup_create();
 
@@ -1229,7 +1247,6 @@ int main(int argc, char **argv)
 	 * processes, and at least some configurations of sshd set
 	 * it, leading to processes getting a timelimit instead of memory
 	 * exceeded, when running via SSH. */
-	FILE *fp = nullptr;
 	const char *oom_score_path = "/proc/self/oom_score_adj";
 	if ( (fp = fopen(oom_score_path, "r+"))!=nullptr ) {
 		if ( fscanf(fp,"%d", &ret)!=1 ) die(errno,"cannot read from `{}'", oom_score_path);

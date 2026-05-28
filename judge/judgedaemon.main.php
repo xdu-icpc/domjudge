@@ -408,6 +408,23 @@ class JudgeDaemon
         // unprivileged user.
         umask(0022);
 
+        // Move myself into a leaf cgroup in case I'm managed by systemd.
+        $file = fopen("/proc/self/cgroup", "r");
+        $sd_cg_prefix = "0::/system.slice";
+        $content = fread($file, 99);
+        fclose($file);
+
+        if (substr($content, 0, strlen($sd_cg_prefix)) == $sd_cg_prefix) {
+                logmsg(LOG_INFO, "managed by systemd");
+                $leaf_cg = "/sys/fs/cgroup" . rtrim(substr($content, 3)) . "/judge";
+                echo $leaf_cg;
+                mkdir($leaf_cg);
+
+                $file = fopen($leaf_cg . "/cgroup.procs", "a");
+                fwrite($file, strval(posix_getpid()));
+                fclose($file);
+        }
+
         // Check basic prerequisites for chroot at judgehost startup
         logmsg(LOG_INFO, "🔏 Executing chroot script: '" . self::CHROOT_SCRIPT . " check'");
         if (!$this->runCommandSafe([LIBJUDGEDIR . '/' . self::CHROOT_SCRIPT, 'check'])) {
